@@ -9,14 +9,17 @@ class Servos(object):
         self.servo_scale = 250
 
     def start_servod(self):
-    	os.system('sudo servod --p1pins="{},{},{},{}"'.format(*p.servo_pins))
+    	os.system('sudo servod --p1pins="{},{},{},{}" --step-size=2'.format(*p.servo_pins))
 
     def stop_servod(self):
         os.system("sudo killall servod")
 
     def write(self, cmd=np.zeros_like(p.servo_pins)):
-        for i, c in enumerate(cmd):
-            os.system("echo {}={}us > /dev/servoblaster".format(i, c))
+        f = open('/dev/servoblaster', 'w')
+        for i, c in enumerate(np.clip(cmd, 1000, 2000)):
+            # os.system("echo {}={}us > /dev/servoblaster".format(i, c))
+            f.write('{}={}us\n'.format(i, c))
+        f.close()
 
 if __name__ == '__main__':
     from time import sleep
